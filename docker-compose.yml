@@ -104,6 +104,21 @@ services:
       - tunnel
     restart: unless-stopped
 
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: blc-portainer
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - portainer_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "9443:9443"
+    networks:
+      - blc-network
+      - tunnel
+
 networks:
   tunnel:
     name: tunnel
@@ -115,3 +130,5 @@ networks:
 volumes:
   mysql_data:
     name: blc_mysql_data
+  portainer_data:
+    name: blc_portainer_data
