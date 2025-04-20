@@ -77,14 +77,22 @@ services:
     container_name: blc-mysql
     environment:
       MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
-      MYSQL_DATABASE: "${DB_DATABASE}"
     ports:
       - "${DB_PORT}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
     networks:
       - blc-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 1G
+        reservations:
+          cpus: "0.1"
+          memory: 512M
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
@@ -106,7 +114,7 @@ services:
 
   portainer:
     image: portainer/portainer-ce:latest
-    container_name: blc-portainer
+    container_name: portainer.blc.works
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
@@ -130,5 +138,6 @@ networks:
 volumes:
   mysql_data:
     name: blc_mysql_data
+    external: true
   portainer_data:
     name: blc_portainer_data
