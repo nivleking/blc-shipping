@@ -130,6 +130,40 @@ services:
       - blc-network
       - tunnel
     restart: unless-stopped
+  
+  redis:
+    image: redis:alpine
+    container_name: blc-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    networks:
+      - blc-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: blc-redis-commander
+    restart: unless-stopped
+    environment:
+      - REDIS_HOSTS=local:redis:6379:0:${REDIS_PASSWORD}
+      - HTTP_USER=${REDIS_COMMANDER_USER}
+      - HTTP_PASSWORD=${REDIS_COMMANDER_PASSWORD}
+      - ADDRESS=0.0.0.0
+    ports:
+      - "8085:8081"
+    depends_on:
+      - redis
+    networks:
+      - blc-network
+      - tunnel
 
   portainer:
     image: portainer/portainer-ce:latest
@@ -158,5 +192,7 @@ volumes:
   mysql_data:
     name: blc_mysql_data
     external: true
+  redis_data:
+    name: blc_redis_data
   portainer_data:
     name: blc_portainer_data
